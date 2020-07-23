@@ -43,7 +43,23 @@ void AfcScrollArea::wheelEvent(QWheelEvent *event)
         event->ignore();
         emit zoomStepped(event->delta() / 120);
     }
-    else event->accept();
+    else {
+        if((event->modifiers() & Qt::ShiftModifier) == 0) {
+            QScrollBar * vsb = verticalScrollBar();
+            if (vsb != NULL) {
+                /* scroll vertically */
+                vsb->setValue(vsb->value() - event->delta());
+            }
+        }
+        else {
+            QScrollBar * gsb = horizontalScrollBar();
+            if (gsb != NULL) {
+                /* scroll horizontally */
+                gsb->setValue(gsb->value() - event->delta());
+            }
+        }
+        event->accept();
+    }
 }
 
 
@@ -167,6 +183,7 @@ void MainWindow::setupUi()
     connect(zoomSlider, SIGNAL(valueChanged(int)),this, SLOT(setZoom(int)));
     zoomSlider->setValue(4);
     connect(saScheme, SIGNAL(zoomStepped(int)), this, SLOT(shiftZoom(int)));
+    connect(saScheme, SIGNAL(scrollStepped(int)), this, SLOT(shiftScrollY(int)));
 
     createToolbox();
 
@@ -1319,6 +1336,10 @@ void MainWindow::shiftZoom(int step)
     zoomSlider->setValue(z + step);
 }
 
+void MainWindow::shiftScrollY(int step)
+{
+    saScheme->viewport()->scroll(0, step);
+}
 
 void setApplicationLocale(const QString &localeName)
 {
